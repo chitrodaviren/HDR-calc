@@ -6,7 +6,7 @@
     <title>HDR Elite - Heavy Duty</title>
     <style>
         :root {
-            --accent: #dc2626; /* Red for Heavy Duty */
+            --accent: #dc2626; 
             --glass: rgba(255, 255, 255, 0.95);
             --grad: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
             --success: #059669;
@@ -71,6 +71,7 @@
         .bar-content { width: 100%; max-width: 450px; display: flex; justify-content: space-between; align-items: center; }
         .gt-amount { font-size: 1.6rem; font-weight: 900; color: var(--success); }
 
+        .history-section h3 { font-size: 0.8rem; color: #64748b; margin-bottom: 10px; padding-left: 10px; }
         .history-pill { background: white; padding: 14px 20px; border-radius: 18px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #edf2f7; }
         .clear-hist-btn { background: transparent; border: 1px solid var(--danger); color: var(--danger); padding: 8px 16px; border-radius: 10px; font-size: 0.75rem; font-weight: 700; cursor: pointer; display: block; margin: 15px auto 0; }
     </style>
@@ -97,33 +98,29 @@
             <div><label>Rate / KG (₹)</label><input type="number" id="rate" placeholder="0" oninput="calculate()"></div>
         </div>
         
-        <div class="input-row">
-            <div>
-                <label>Channel Thickness</label>
-                <select id="channelThick" onchange="calculate()">
-                    <option value="1.16">2.5 mm (1.16 kg/ft)</option>
-                    <option value="1.392">3 mm (1.392 kg/ft)</option>
-                </select>
-            </div>
-            <div>
-                <label>Support (matches Ch.)</label>
-                <select id="supportThick" disabled>
-                    <option value="0.805">Standard</option>
-                </select>
-            </div>
+        <div class="input-group" style="margin-bottom: 15px;">
+            <label>Channel Thickness</label>
+            <select id="channelThick" onchange="calculate()">
+                <option value="1.16">2.5 mm (1.16 kg/ft)</option>
+                <option value="1.392">3 mm (1.392 kg/ft)</option>
+            </select>
         </div>
 
-        <label>Beam Thickness</label>
-        <select id="beamThick" onchange="calculate()" style="margin-bottom:15px">
-            <option value="1.54">2 mm (1.54 kg/ft)</option>
-            <option value="1.925" selected>2.5 mm (1.925 kg/ft)</option>
-        </select>
+        <div class="input-group" style="margin-bottom: 15px;">
+            <label>Beam Thickness</label>
+            <select id="beamThick" onchange="calculate()">
+                <option value="1.54">2 mm (1.54 kg/ft)</option>
+                <option value="1.925" selected>2.5 mm (1.925 kg/ft)</option>
+            </select>
+        </div>
 
-        <label>Shelf Thickness</label>
-        <select id="shelfThick" onchange="calculate()">
-            <option value="0.715">1 mm (0.715 kg/sqft)</option>
-            <option value="1.2">1.2 mm (1.2 kg/sqft)</option>
-        </select>
+        <div class="input-group">
+            <label>Shelf Thickness</label>
+            <select id="shelfThick" onchange="calculate()">
+                <option value="0.715">1 mm (0.715 kg/sqft)</option>
+                <option value="1.2">1.2 mm (1.2 kg/sqft)</option>
+            </select>
+        </div>
 
         <div class="dashboard">
             <span class="stat-label">Price Without GST</span>
@@ -141,7 +138,7 @@
     </div>
 
     <div class="history-section" style="margin-top:25px">
-        <h3 id="histHeader" style="display:none; font-size: 0.8rem; color: #64748b; margin-bottom:10px;">RECENT QUOTES</h3>
+        <h3 id="histHeader" style="display:none;">RECENT QUOTES</h3>
         <div id="historyList"></div>
         <button id="clearHistBtn" class="clear-hist-btn" style="display:none" onclick="clearHistory()">Clear History</button>
     </div>
@@ -163,23 +160,18 @@
         const levels = parseFloat(document.getElementById('levels').value) || 0;
         const rate = parseFloat(document.getElementById('rate').value) || 0;
         
-        // Channel & Support Selection Logic
         const chFact = parseFloat(document.getElementById('channelThick').value);
-        const supFact = (chFact === 1.16) ? 0.805 : 0.966; // 2.5mm vs 3mm support logic
+        // SILENT LOGIC: Support weight matches channel selection
+        const supFact = (chFact === 1.16) ? 0.805 : 0.966;
 
         const beamFact = parseFloat(document.getElementById('beamThick').value);
         const shelfFact = parseFloat(document.getElementById('shelfThick').value);
 
         if (h === 0 && l === 0) { resetDisplay(); return; }
 
-        // 1. Channel + Support (6 x Depth per set logic)
         let channelWt = (h * chFact * 2) * sets;
         let sideSupportWt = (6 * d * supFact) * sets; 
-        
-        // 2. Beam Weight: (Fact * L * Levels * 2)
         let totalBeamWt = (beamFact * l * levels * 2);
-
-        // 3. Shelf Weight: (L * D * Levels * Fact)
         let totalShelfWt = (l * d * levels * shelfFact);
 
         let totalWeight = (channelWt + sideSupportWt) + totalBeamWt + totalShelfWt;
