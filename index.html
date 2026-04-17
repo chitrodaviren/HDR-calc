@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HDR Elite - Heavy Duty</title>
+    <style>
+        :root {
+            --accent: #dc2626; /* Red for Heavy Duty */
+            --glass: rgba(255, 255, 255, 0.95);
+            --grad: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            --success: #059669;
+            --danger: #ef4444;
+        }
+
+        body { 
+            font-family: 'Inter', -apple-system, sans-serif; 
+            background: #f1f5f9;
+            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+            background-size: 20px 20px;
+            margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center;
+            padding-bottom: 120px;
+        }
+
+        .app-container { width: 100%; max-width: 450px; animation: fadeIn 0.8s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .header { text-align: center; margin-bottom: 20px; }
+        .header img { width: 90px; height: 90px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); object-fit: cover; }
+        .header h1 { font-size: 1.4rem; margin: 12px 0 0; color: #1e293b; letter-spacing: -0.5px; font-weight: 800; }
+
+        .glass-card { 
+            background: var(--glass); backdrop-filter: blur(10px);
+            padding: 24px; border-radius: 28px; 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+            border: 1px solid rgba(255,255,255,0.8);
+        }
+
+        .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        label { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: #64748b; margin-bottom: 6px; display: block; letter-spacing: 0.5px; padding-left: 5px; }
+
+        input, select { 
+            width: 100%; padding: 14px; border: 2px solid #e2e8f0; border-radius: 14px; 
+            font-size: 1rem; transition: all 0.3s;
+            background: #f8fafc; outline: none; box-sizing: border-box;
+        }
+        input:focus { border-color: var(--accent); background: white; box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.1); }
+
+        .dashboard { 
+            background: var(--grad); color: white; padding: 25px; 
+            border-radius: 24px; margin-top: 25px; position: relative; overflow: hidden;
+        }
+
+        .stat-label { font-size: 0.75rem; text-transform: uppercase; opacity: 0.6; font-weight: 600; }
+        .main-price { font-size: 2.2rem; font-weight: 800; margin: 5px 0; color: #fca5a5; display: block; }
+        
+        .grid-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); }
+        .stat-val { font-weight: 700; font-size: 1.1rem; display: block; }
+
+        .action-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+        .save-btn, .clear-btn { padding: 16px; border: none; border-radius: 16px; font-weight: 800; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; }
+        .save-btn { background: var(--accent); color: white; }
+        .clear-btn { background: #e2e8f0; color: #64748b; }
+
+        .grand-total-bar {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: white; border-top: 1px solid #e2e8f0;
+            padding: 20px; display: flex; justify-content: center;
+            box-shadow: 0 -10px 25px rgba(0,0,0,0.05); z-index: 100;
+        }
+        .bar-content { width: 100%; max-width: 450px; display: flex; justify-content: space-between; align-items: center; }
+        .gt-amount { font-size: 1.6rem; font-weight: 900; color: var(--success); }
+
+        .history-pill { background: white; padding: 14px 20px; border-radius: 18px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #edf2f7; }
+        .clear-hist-btn { background: transparent; border: 1px solid var(--danger); color: var(--danger); padding: 8px 16px; border-radius: 10px; font-size: 0.75rem; font-weight: 700; cursor: pointer; display: block; margin: 15px auto 0; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="header">
+        <img src="manifesticon.png" alt="HDR Logo">
+        <h1>Heavy Duty Rack</h1>
+    </div>
+
+    <div class="glass-card">
+        <div class="input-row">
+            <div><label>Height (ft)</label><input type="number" id="h" placeholder="0" oninput="calculate()"></div>
+            <div><label>Sets (Pair)</label><input type="number" id="sets" placeholder="0" oninput="calculate()"></div>
+        </div>
+        <div class="input-row">
+            <div><label>Length (ft)</label><input type="number" id="l" placeholder="0" oninput="calculate()"></div>
+            <div><label>Depth (ft)</label><input type="number" id="d" placeholder="0" oninput="calculate()"></div>
+        </div>
+        <div class="input-row">
+            <div><label>Beam Levels</label><input type="number" id="levels" placeholder="0" oninput="calculate()"></div>
+            <div><label>Rate / KG (₹)</label><input type="number" id="rate" placeholder="0" oninput="calculate()"></div>
+        </div>
+        
+        <div class="input-row">
+            <div>
+                <label>Channel Thickness</label>
+                <select id="channelThick" onchange="calculate()">
+                    <option value="1.16">2.5 mm (1.16 kg/ft)</option>
+                    <option value="1.392">3 mm (1.392 kg/ft)</option>
+                </select>
+            </div>
+            <div>
+                <label>Support (matches Ch.)</label>
+                <select id="supportThick" disabled>
+                    <option value="0.805">Standard</option>
+                </select>
+            </div>
+        </div>
+
+        <label>Beam Thickness</label>
+        <select id="beamThick" onchange="calculate()" style="margin-bottom:15px">
+            <option value="1.54">2 mm (1.54 kg/ft)</option>
+            <option value="1.925" selected>2.5 mm (1.925 kg/ft)</option>
+        </select>
+
+        <label>Shelf Thickness</label>
+        <select id="shelfThick" onchange="calculate()">
+            <option value="0.715">1 mm (0.715 kg/sqft)</option>
+            <option value="1.2">1.2 mm (1.2 kg/sqft)</option>
+        </select>
+
+        <div class="dashboard">
+            <span class="stat-label">Price Without GST</span>
+            <span class="main-price" id="price_base">₹0</span>
+            <div class="grid-stats">
+                <div><span class="stat-label">Net Weight</span><span class="stat-val" id="w_total">0.00 kg</span></div>
+                <div><span class="stat-label">GST (18%)</span><span class="stat-val" id="gst_amt">₹0</span></div>
+            </div>
+        </div>
+
+        <div class="action-btns">
+            <button class="clear-btn" onclick="clearForm()">Clear All</button>
+            <button class="save-btn" onclick="saveHistory()">Save Quote</button>
+        </div>
+    </div>
+
+    <div class="history-section" style="margin-top:25px">
+        <h3 id="histHeader" style="display:none; font-size: 0.8rem; color: #64748b; margin-bottom:10px;">RECENT QUOTES</h3>
+        <div id="historyList"></div>
+        <button id="clearHistBtn" class="clear-hist-btn" style="display:none" onclick="clearHistory()">Clear History</button>
+    </div>
+</div>
+
+<div class="grand-total-bar">
+    <div class="bar-content">
+        <div class="gt-label">Grand Total<br><span style="font-size:0.6rem; opacity:0.7">Inc. All Taxes</span></div>
+        <div class="gt-amount" id="price_gst">₹0</div>
+    </div>
+</div>
+
+<script>
+    function calculate() {
+        const h = parseFloat(document.getElementById('h').value) || 0;
+        const sets = parseFloat(document.getElementById('sets').value) || 0;
+        const l = parseFloat(document.getElementById('l').value) || 0;
+        const d = parseFloat(document.getElementById('d').value) || 0;
+        const levels = parseFloat(document.getElementById('levels').value) || 0;
+        const rate = parseFloat(document.getElementById('rate').value) || 0;
+        
+        // Channel & Support Selection Logic
+        const chFact = parseFloat(document.getElementById('channelThick').value);
+        const supFact = (chFact === 1.16) ? 0.805 : 0.966; // 2.5mm vs 3mm support logic
+
+        const beamFact = parseFloat(document.getElementById('beamThick').value);
+        const shelfFact = parseFloat(document.getElementById('shelfThick').value);
+
+        if (h === 0 && l === 0) { resetDisplay(); return; }
+
+        // 1. Channel + Support (6 x Depth per set logic)
+        let channelWt = (h * chFact * 2) * sets;
+        let sideSupportWt = (6 * d * supFact) * sets; 
+        
+        // 2. Beam Weight: (Fact * L * Levels * 2)
+        let totalBeamWt = (beamFact * l * levels * 2);
+
+        // 3. Shelf Weight: (L * D * Levels * Fact)
+        let totalShelfWt = (l * d * levels * shelfFact);
+
+        let totalWeight = (channelWt + sideSupportWt) + totalBeamWt + totalShelfWt;
+        let priceBase = totalWeight * rate;
+        let gst = priceBase * 0.18;
+        let finalPrice = priceBase + gst;
+
+        document.getElementById('w_total').innerText = totalWeight.toFixed(2) + " kg";
+        document.getElementById('price_base').innerText = "₹" + Math.round(priceBase).toLocaleString('en-IN');
+        document.getElementById('gst_amt').innerText = "₹" + Math.round(gst).toLocaleString('en-IN');
+        document.getElementById('price_gst').innerText = "₹" + Math.round(finalPrice).toLocaleString('en-IN');
+    }
+
+    function resetDisplay() {
+        document.getElementById('w_total').innerText = "0.00 kg";
+        document.getElementById('price_base').innerText = "₹0";
+        document.getElementById('gst_amt').innerText = "₹0";
+        document.getElementById('price_gst').innerText = "₹0";
+    }
+
+    function clearForm() {
+        document.querySelectorAll('input').forEach(i => i.value = "");
+        resetDisplay();
+    }
+
+    function saveHistory() {
+        const total = document.getElementById('price_gst').innerText;
+        const h = document.getElementById('h').value;
+        const l = document.getElementById('l').value;
+        if(!h || total === "₹0") return;
+        const entry = { info: `HDR ${h}'x${l}'`, total: total, date: new Date().toLocaleDateString() };
+        let history = JSON.parse(localStorage.getItem('hdrHistory')) || [];
+        history.unshift(entry);
+        localStorage.setItem('hdrHistory', JSON.stringify(history));
+        renderHistory();
+    }
+
+    function clearHistory() {
+        if(confirm("Delete all HDR quotes?")) { localStorage.removeItem('hdrHistory'); renderHistory(); }
+    }
+
+    function renderHistory() {
+        let history = JSON.parse(localStorage.getItem('hdrHistory')) || [];
+        const list = document.getElementById('historyList');
+        const header = document.getElementById('histHeader');
+        const btn = document.getElementById('clearHistBtn');
+        header.style.display = btn.style.display = history.length > 0 ? "block" : "none";
+        list.innerHTML = history.slice(0, 5).map(i => `
+            <div class="history-pill">
+                <span style="font-weight:700;">${i.info}</span>
+                <span style="font-weight:800; color:var(--accent)">${i.total}</span>
+            </div>
+        `).join('');
+    }
+    window.onload = renderHistory;
+</script>
+</body>
+</html>
